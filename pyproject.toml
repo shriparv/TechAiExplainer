@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "TechExplainerAI"
+version = "1.0.0"
+description = "Local AI-powered technology explainer video generation platform."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "fastapi>=0.115.0",
+  "gradio>=5.0.0",
+  "httpx>=0.28.0",
+  "moviepy>=1.0.3",
+  "Pillow>=10.4.0",
+  "pydantic>=2.9.0",
+  "pydantic-settings>=2.5.0",
+  "PyYAML>=6.0.2",
+  "requests>=2.32.0",
+  "uvicorn>=0.32.0",
+  "python-multipart>=0.0.12",
+]
+
+[project.scripts]
+tech-explainer-ai = "main:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["api", "config", "core", "diagrams", "frontend", "llm", "render", "slides", "tts", "uploads", "utils", "visuals"]

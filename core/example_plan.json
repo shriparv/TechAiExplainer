@@ -1,0 +1,40 @@
+{
+  "topic": "Kubernetes",
+  "language": "en",
+  "audience": "beginner",
+  "style": "educational",
+  "duration": "5min",
+  "introduction_hook": "Modern apps need reliable scaling and deployment automation.",
+  "architecture_explanation": "Kubernetes manages containers across clustered machines using a control plane and worker nodes.",
+  "workflow_explanation": "Developers submit manifests, controllers reconcile desired state, and workloads are scheduled across nodes.",
+  "real_life_use_cases": [
+    "Microservice deployment",
+    "Batch data pipelines",
+    "Model serving"
+  ],
+  "pros_and_cons": {
+    "pros": [
+      "Scalability",
+      "Self-healing",
+      "Portability"
+    ],
+    "cons": [
+      "Operational complexity",
+      "Learning curve"
+    ]
+  },
+  "related_technologies": [
+    "Docker",
+    "Helm",
+    "Istio"
+  ],
+  "learning_roadmap": [
+    "Learn containers",
+    "Understand pods and services",
+    "Practice deployments"
+  ],
+  "scenes": [],
+  "diagrams": [],
+  "intro_cta": "Stay through the end for the deployment roadmap.",
+  "outro_cta": "Like, subscribe, and comment the next technology you want explained."
+}

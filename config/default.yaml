@@ -1,0 +1,45 @@
+app:
+  name: TechExplainerAI
+  output_dir: output
+  cache_dir: output/cache
+  temp_dir: output/tmp
+  assets_dir: output/assets
+ollama:
+  base_url: http://127.0.0.1:11434
+  model: deepseek-r1:32b
+  timeout_seconds: 1800
+comfyui:
+  base_url: http://127.0.0.1:8188
+  workflow_path: config/comfyui_qwen_api.json
+  poll_interval_seconds: 2
+diagram:
+  mermaid_cli: C:\Users\dwive\AppData\Roaming\npm\mmdc.cmd
+  graphviz_dot: C:\Program Files\Graphviz\bin\dot.exe
+tts:
+  piper_executable: D:\Coding\Python\TechAiExplainer\models\piper\piper.exe
+  model_path: models/piper/en_US-lessac-medium.onnx
+  config_path: models/piper/en_US-lessac-medium.onnx.json
+  voice_models:
+    en:
+      model_path: models/piper/en_US-lessac-medium.onnx
+      config_path: models/piper/en_US-lessac-medium.onnx.json
+    hi:
+      model_path: models/piper/hi_IN-example-medium.onnx
+      config_path: models/piper/hi_IN-example-medium.onnx.json
+video:
+  ffmpeg_path: ffmpeg
+  ffprobe_path: ffprobe
+  fps: 30
+  width: 1920
+  height: 1080
+  audio_sample_rate: 22050
+  encoder: h264_nvenc
+  preset: p4
+api:
+  host: 127.0.0.1
+  port: 8000
+logging:
+  level: INFO
+  log_file: output/techexplainer.log
+youtube:
+  enabled: false
