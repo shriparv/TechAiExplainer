@@ -17,12 +17,12 @@ diagram:
   graphviz_dot: C:\Program Files\Graphviz\bin\dot.exe
 tts:
   piper_executable: D:\Coding\Python\TechAiExplainer\models\piper\piper.exe
-  model_path: models/piper/en_US-lessac-medium.onnx
-  config_path: models/piper/en_US-lessac-medium.onnx.json
+  model_path: models/piper/en_US-amy-medium.onnx
+  config_path: models/piper/en_US-amy-medium.onnx.json
   voice_models:
     en:
-      model_path: models/piper/en_US-lessac-medium.onnx
-      config_path: models/piper/en_US-lessac-medium.onnx.json
+      model_path: models/piper/en_US-amy-medium.onnx
+      config_path: models/piper/en_US-amy-medium.onnx.json
     hi:
       model_path: models/piper/hi_IN-example-medium.onnx
       config_path: models/piper/hi_IN-example-medium.onnx.json

@@ -94,31 +94,33 @@ RESEARCH CONTEXT (from internet search):
 Return ONLY valid JSON matching the provided schema.
 
 CORE GOAL:
-Provide a deep, clear, and engaging explanation. Avoid surface-level summaries. Explain the "WHY" and "HOW", not just the "WHAT".
+Provide a deep, clear, and engaging explanation. You must act as a Subject Matter Expert and autonomously decide the most critical aspects, features, and technical pillars to teach based on the topic.
 
 DETAILED REQUIREMENTS:
-1. **Tutorial Structure**:
-   - Comprehensive Intro: Hook the audience, define the tech, and explain its significance.
-   - Deep Dive Architecture: Explain components, data flow, and internal mechanics.
-   - Real-world Workflow: Step-by-step how it's used in production.
-   - Comparison: Pros/Cons and how it differs from competitors/related techs.
-   - Future Outlook: Roadmap, trends, and what's next.
-
-2. **Scene Details**:
+1. **Autonomous Planning Strategy**:
+   - Analyze the RESEARCH CONTEXT to identify the core technical pillars (e.g., Performance, Security, unique features, architecture).
+   - Design the slides to progressively explain these pillars. 
+   - **Mandatory Elements**: 
+     * An Introduction slide to hook the audience.
+     * An Architecture/Workflow slide with a `diagram_prompt`.
+     * A Real-World Use Case slide with an `image_prompt`.
+     * Deep dive slides focusing on the features YOU identified.
+     * A FINAL SLIDE summarizing and asking for a Like/Subscribe/Comment.
+2. **Content Quality**:
    - Narration: Must be educational, detailed, and professional. Each scene should have at least 3-4 sentences of deep explanation.
-   - Bullet Points: Provide 3-5 points per slide. Use them to reinforce the narration, not just repeat it.
+   - Bullet Points: Provide 3-5 points per slide. Use them to reinforce the narration.
    - Duration: Ensure durations allow for comfortable reading and listening.
 
-3. **Visual Strategy**:
-   - Image Prompts: Describe 3D isometric, high-quality, minimalist technical visuals. 
-     * Example: "A sleek 3D isometric laboratory with floating data nodes connected by glowing fiber optics, cinematic lighting, 8k."
+3. **Visual Strategy (CRITICAL)**:
+   - **Image Prompts**: Demand high-impact, professional-grade technical art. 
+     * Style: 3D isometric or cinematic conceptual art. 
+     * Keywords: "Vibrant neon accents", "Cyber-tech aesthetic", "Glassmorphism", "Soft volumetric lighting", "8k resolution", "Premium UI elements".
+     * Example: "A futuristic data center with translucent glass servers glowing with internal cyan energy, floating holographic UI showing metrics, deep navy background, cinematic octane render."
      * NO TEXT in images.
-   - Diagrams: Include Mermaid or Graphviz diagrams for ANY complex architecture, flow, or comparison.
-     * Use "graph TD;" for Mermaid flowcharts.
-     * Use "digraph G {{ ... }}" for Graphviz.
-     * Ensure the diagrams are syntactically correct and logical.
-   - Charts: Include data-driven charts (bar, line, or pie) for technical metrics, performance comparisons, or market trends.
-     * Ensure labels and values are realistic and based on the research context.
+   - **Diagrams & Charts**: You MUST include at least 2-3 Mermaid diagrams and 1-2 Charts for a topic this length.
+     * Diagrams: Use for architecture, state flows, or components.
+     * Charts: Use for performance metrics, comparisons, or data trends.
+     * Ensure all syntax and data are logical and research-backed.
 
 4. **Tone and Style**:
    - Use the "{request.style}" style consistently.

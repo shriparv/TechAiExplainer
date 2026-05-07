@@ -51,7 +51,7 @@ class TechExplainerPipeline:
             self.runner,
         )
         self.timeline_builder = TimelineBuilder()
-        self.video_renderer = VideoRenderer(settings.video, self.runner)
+        self.video_renderer = VideoRenderer(settings.video, self.runner, settings.app.bg_music_dir)
         self.slide_composer = SlideComposer(settings.video.width, settings.video.height)
         self.scene_planner = ScenePlanner()
         self.search_client = SearchClient()

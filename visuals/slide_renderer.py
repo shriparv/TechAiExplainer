@@ -16,54 +16,55 @@ class SlideComposer:
         self.logger.info("Rendering slide %d: %s", scene.index, scene.title)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         
-        # Base colors and layout constants
-        bg_color = (14, 18, 24)
-        card_color = (24, 30, 38)
-        text_primary = (240, 240, 240)
-        text_secondary = (220, 224, 230)
-        accent_color = (130, 180, 255)
+        # --- MODERN DESIGN SYSTEM ---
+        # Palette: Deep Navy / Cyber Blue / Vibrant Accents
+        bg_top = (10, 15, 25)
+        bg_bottom = (20, 30, 45)
+        card_fill = (30, 40, 55, 180) # Semi-transparent for glass effect
+        card_border = (80, 120, 255, 100)
         
-        margin = 80
-        content_x = margin + 50
-        max_text_width = (self.width // 2) - margin
+        text_primary = (255, 255, 255)
+        text_secondary = (200, 210, 230)
+        accent_color = (0, 210, 255) # Electric Cyan
+        accent_secondary = (150, 100, 255) # Cyber Purple
         
-        # Load fonts
-        try:
-            font_path = "C:\\Windows\\Fonts\\arial.ttf"
-            title_font = ImageFont.truetype(font_path, 64)
-            body_font = ImageFont.truetype(font_path, 38)
-            footer_font = ImageFont.truetype(font_path, 24)
-        except Exception:
-            self.logger.warning("Arial font not found, falling back to default")
-            title_font = body_font = footer_font = ImageFont.load_default()
+        margin = 60
+        
+        # Load fonts (Prefer Segoe UI on Windows for a cleaner look)
+        def get_font(size: int, bold: bool = False):
+            try:
+                # Try Segoe UI (Standard on Windows)
+                paths = [
+                    "C:\\Windows\\Fonts\\segoeuib.ttf" if bold else "C:\\Windows\\Fonts\\segoeui.ttf",
+                    "C:\\Windows\\Fonts\\arialbd.ttf" if bold else "C:\\Windows\\Fonts\\arial.ttf"
+                ]
+                for p in paths:
+                    if Path(p).exists():
+                        return ImageFont.truetype(p, size)
+            except Exception:
+                pass
+            return ImageFont.load_default()
 
-        # Create canvas
-        image = Image.new("RGB", (self.width, self.height), color=bg_color)
+        title_font = get_font(72, bold=True)
+        body_font = get_font(42)
+        footer_font = get_font(24)
+        
+        # Create canvas with background gradient
+        image = Image.new("RGBA", (self.width, self.height))
         draw = ImageDraw.Draw(image)
         
-        # Background card
-        draw.rounded_rectangle((margin, margin, self.width - margin, self.height - margin), radius=32, fill=card_color)
-        
-        # Title
-        draw.text((content_x, margin + 40), scene.title, fill=text_primary, font=title_font)
-        
-        # Bullet points with wrapping
-        y = margin + 160
-        for bullet in scene.bullet_points:
-            wrapped_lines = self._wrap_text(bullet, body_font, max_text_width)
-            for line in wrapped_lines:
-                draw.text((content_x + 20, y), f"- {line}" if line == wrapped_lines[0] else f"  {line}", fill=text_secondary, font=body_font)
-                y += 55
-            y += 20
+        # 1. Background Gradient
+        for y in range(self.height):
+            r = int(bg_top[0] + (bg_bottom[0] - bg_top[0]) * y / self.height)
+            g = int(bg_top[1] + (bg_bottom[1] - bg_top[1]) * y / self.height)
+            b = int(bg_top[2] + (bg_bottom[2] - bg_top[2]) * y / self.height)
+            draw.line([(0, y), (self.width, y)], fill=(r, g, b, 255))
 
-        # Footer
-        footer = f"Scene {scene.index} | Duration: {scene.duration_seconds:.1f}s"
-        draw.text((content_x, self.height - margin - 50), footer, fill=accent_color, font=footer_font)
+        # 2. Decorative Background Elements (Subtle Glows)
+        self._draw_glow(draw, (self.width * 0.8, self.height * 0.2), 400, accent_secondary + (30,))
+        self._draw_glow(draw, (self.width * 0.2, self.height * 0.8), 300, accent_color + (30,))
 
-        # Visual Assets (Right Side)
-        right_content_x = (self.width // 2) + 40
-        available_height = self.height - (2 * margin) - 100
-        
+        # 3. Dynamic Layout Logic
         assets = []
         if scene.image_path and Path(scene.image_path).exists():
             assets.append(("image", scene.image_path))
@@ -72,35 +73,82 @@ class SlideComposer:
         if scene.chart_path and Path(scene.chart_path).exists():
             assets.append(("chart", scene.chart_path))
 
+        # Layout splits
         if assets:
-            # Distribute height between assets
-            h_per_asset = available_height // len(assets)
-            curr_y = margin + 50
-            for type_name, path in assets:
-                asset_img = Image.open(path).convert("RGBA" if type_name == "diagram" else "RGB")
-                
-                # Resize keeping aspect ratio
-                max_w = self.width - right_content_x - margin - 40
-                max_h = h_per_asset - 40
-                
-                asset_img.thumbnail((max_w, max_h), Image.Resampling.LANCZOS)
-                
-                # Center asset in its assigned slot
-                paste_x = right_content_x + (max_w - asset_img.width) // 2
-                paste_y = curr_y + (max_h - asset_img.height) // 2
-                
-                if asset_img.mode == "RGBA":
-                    # Use alpha for diagram transparency if supported
-                    temp = Image.new("RGB", asset_img.size, card_color)
-                    temp.paste(asset_img, mask=asset_img.split()[3])
-                    image.paste(temp, (paste_x, paste_y))
-                else:
-                    image.paste(asset_img, (paste_x, paste_y))
-                
-                curr_y += h_per_asset
+            text_area_width = (self.width * 0.55) - (2 * margin)
+            asset_area_x = self.width * 0.55
+            asset_area_width = self.width * 0.45 - margin
+        else:
+            text_area_width = self.width - (2 * margin) - 100
+            asset_area_x = self.width
+            asset_area_width = 0
 
-        image.save(output_path)
+        # 4. Glass Card
+        card_rect = [margin, margin, self.width - margin, self.height - margin]
+        # Overlay for glass effect
+        glass_overlay = Image.new("RGBA", (self.width, self.height), (0, 0, 0, 0))
+        glass_draw = ImageDraw.Draw(glass_overlay)
+        glass_draw.rounded_rectangle(card_rect, radius=40, fill=card_fill, outline=card_border, width=2)
+        image = Image.alpha_composite(image, glass_overlay)
+        draw = ImageDraw.Draw(image)
+
+        # 5. Render Title with Underline
+        title_y = margin + 60
+        draw.text((margin + 60, title_y), scene.title, fill=text_primary, font=title_font)
+        # Accent Underline
+        draw.rectangle([margin + 60, title_y + 90, margin + 260, title_y + 98], fill=accent_color)
+
+        # 6. Render Bullet Points
+        curr_y = title_y + 160
+        bullet_margin = 40
+        for bullet in scene.bullet_points:
+            wrapped = self._wrap_text(bullet, body_font, text_area_width - bullet_margin)
+            # Custom Bullet Marker (Glowy Dot)
+            draw.ellipse([margin + 60, curr_y + 15, margin + 75, curr_y + 30], fill=accent_color)
+            
+            for i, line in enumerate(wrapped):
+                draw.text((margin + 60 + bullet_margin, curr_y), line, fill=text_secondary, font=body_font)
+                curr_y += 55
+            curr_y += 25
+
+        # 7. Render Visual Assets
+        if assets:
+            available_h = self.height - (2 * margin) - 120
+            h_per = available_h // len(assets)
+            ay = margin + 60
+            for type_name, path in assets:
+                try:
+                    asset_img = Image.open(path).convert("RGBA")
+                    # Scale to fit
+                    mw, mh = asset_area_width - 60, h_per - 40
+                    asset_img.thumbnail((mw, mh), Image.Resampling.LANCZOS)
+                    
+                    # Center in slot
+                    px = asset_area_x + (mw - asset_img.width) // 2
+                    py = ay + (mh - asset_img.height) // 2
+                    
+                    # Draw a subtle container for the image
+                    draw.rounded_rectangle([px-5, py-5, px+asset_img.width+5, py+asset_img.height+5], radius=15, outline=(255,255,255,40), width=1)
+                    
+                    image.paste(asset_img, (int(px), int(py)), asset_img if asset_img.mode == "RGBA" else None)
+                    ay += h_per
+                except Exception as e:
+                    self.logger.error("Failed to render asset %s: %s", path, e)
+
+        # 8. Footer Info
+        footer_text = f"CHAPTER: {scene.title.upper()} | STEP {scene.index}"
+        draw.text((margin + 60, self.height - margin - 60), footer_text, fill=accent_color, font=footer_font)
+        
+        # Save as RGB for video compatibility
+        image.convert("RGB").save(output_path)
         return str(output_path)
+
+    def _draw_glow(self, draw: ImageDraw.ImageDraw, pos: tuple[float, float], radius: int, color: tuple[int, int, int, int]):
+        """Draws a simple radial glow effect."""
+        cx, cy = pos
+        for r in range(radius, 0, -10):
+            alpha = int(color[3] * (1 - r / radius))
+            draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=color[:3] + (alpha,))
 
     def _wrap_text(self, text: str, font: ImageFont.FreeTypeFont, max_width: int) -> list[str]:
         words = text.split()

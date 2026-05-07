@@ -1,29 +1,32 @@
 from __future__ import annotations
 
 import logging
+import random
 from pathlib import Path
 
-from moviepy import AudioFileClip, CompositeVideoClip, ImageClip, concatenate_videoclips
+from moviepy import AudioFileClip, CompositeVideoClip, ImageClip, concatenate_videoclips, CompositeAudioClip
 import moviepy.video.fx as vfx
+from moviepy.audio.fx import volumex
 
 from config.settings import VideoSettings
 from core.models import TimelinePlan
-from render.subtitles import write_srt
+from render.subtitles import write_ass
 from utils.command import CommandRunner
 
 
 class VideoRenderer:
-    def __init__(self, settings: VideoSettings, runner: CommandRunner) -> None:
+    def __init__(self, settings: VideoSettings, runner: CommandRunner, bg_music_dir: str | None = None) -> None:
         self.settings = settings
         self.runner = runner
+        self.bg_music_dir = Path(bg_music_dir) if bg_music_dir else None
         self.logger = logging.getLogger(self.__class__.__name__)
 
     def render(self, timeline: TimelinePlan, output_dir: Path, slug: str) -> tuple[str, str]:
         output_dir.mkdir(parents=True, exist_ok=True)
         temp_video = output_dir / f"{slug}_timeline.mp4"
         final_video = output_dir / f"{slug}.mp4"
-        subtitle_path = output_dir / f"{slug}.srt"
-        write_srt(subtitle_path, timeline.subtitles)
+        subtitle_path = output_dir / f"{slug}.ass"
+        write_ass(subtitle_path, timeline.subtitles)
 
         self.logger.info("Preparing %d video clips for concatenation...", len(timeline.scenes))
         clips = []
@@ -31,7 +34,13 @@ class VideoRenderer:
             if scene.slide_path is None or scene.narration_path is None:
                 self.logger.warning("Skipping scene %d: missing slide or narration path", scene.scene_index)
                 continue
-            image_clip = ImageClip(scene.slide_path).with_duration(scene.end_seconds - scene.start_seconds)
+            duration = scene.end_seconds - scene.start_seconds
+            image_clip = ImageClip(scene.slide_path).with_duration(duration)
+            
+            # --- ANIMATION: Subtle Zoom (Ken Burns Effect) ---
+            # Increase scale from 1.0 to 1.1 over the duration
+            image_clip = image_clip.transform(lambda get_frame, t: vfx.resize(get_frame(t), 1.0 + 0.1 * (t / duration)))
+            
             audio_clip = AudioFileClip(scene.narration_path)
             image_clip = image_clip.with_audio(audio_clip)
             clips.append(image_clip)
@@ -41,6 +50,23 @@ class VideoRenderer:
 
         self.logger.info("Concatenating clips and writing temporary video file: %s", temp_video)
         final_clip = concatenate_videoclips(clips, method="compose")
+        
+        # --- BACKGROUND MUSIC ---
+        if self.bg_music_dir and self.bg_music_dir.exists():
+            music_files = list(self.bg_music_dir.glob("*.mp3")) + list(self.bg_music_dir.glob("*.wav"))
+            if music_files:
+                music_path = random.choice(music_files)
+                self.logger.info("Adding background music: %s", music_path.name)
+                bg_music = AudioFileClip(str(music_path))
+                
+                # Loop and trim to match video duration
+                bg_music = bg_music.fx(vfx.loop, duration=final_clip.duration)
+                bg_music = bg_music.fx(volumex, self.settings.bg_music_volume)
+                
+                # Mix with existing narration
+                new_audio = CompositeAudioClip([final_clip.audio, bg_music])
+                final_clip = final_clip.with_audio(new_audio)
+
         final_clip = CompositeVideoClip([final_clip], size=(self.settings.width, self.settings.height))
         final_clip.write_videofile(
             str(temp_video),

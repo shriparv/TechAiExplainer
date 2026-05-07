@@ -14,6 +14,7 @@ class AppPaths(BaseModel):
     cache_dir: str = "output/cache"
     temp_dir: str = "output/tmp"
     assets_dir: str = "output/assets"
+    bg_music_dir: str = "bgmusics"
 
 
 class OllamaSettings(BaseModel):
@@ -49,6 +50,7 @@ class VideoSettings(BaseModel):
     audio_sample_rate: int = 22050
     encoder: str = "h264_nvenc"
     preset: str = "p4"
+    bg_music_volume: float = 0.1
 
 
 class ApiSettings(BaseModel):
