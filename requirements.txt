@@ -1,7 +1,7 @@
 fastapi>=0.115.0
 gradio>=5.0.0
 httpx>=0.28.0
-moviepy>=1.0.3
+moviepy>=2.0.0
 Pillow>=10.4.0
 pydantic>=2.9.0
 pydantic-settings>=2.5.0
@@ -11,3 +11,4 @@ uvicorn>=0.32.0
 python-multipart>=0.0.12
 duckduckgo-search>=8.1.1
 matplotlib>=3.10.0
+beautifulsoup4>=4.12.0

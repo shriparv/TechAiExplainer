@@ -17,6 +17,37 @@ class OllamaTutorialGenerator:
         self.cache = cache
         self.logger = logging.getLogger(self.__class__.__name__)
 
+    def clean_research_context(self, topic: str, raw_context: str) -> str:
+        if not raw_context.strip():
+            return ""
+            
+        prompt = f"""
+You are an expert technical researcher. Below is raw text scraped from the internet about the topic: {topic}.
+Your job is to read this raw text and extract only the factual, technical, and relevant information.
+Ignore ads, navigation menus, and irrelevant fluff.
+Summarize the key architectural details, features, performance metrics, and use cases.
+Keep the output concise but dense with technical facts.
+
+RAW TEXT:
+{raw_context}
+
+CLEANED FACTUAL SUMMARY:
+"""
+        self.logger.info("Sending raw web data to LLM for cleaning (size: %d chars)", len(raw_context))
+        response = requests.post(
+            f"{self.base_url}/api/generate",
+            json={
+                "model": self.model,
+                "prompt": prompt,
+                "stream": False,
+            },
+            timeout=self.timeout_seconds,
+        )
+        response.raise_for_status()
+        cleaned_text = response.json().get("response", "").strip()
+        self.logger.info("Cleaned context received (size: %d chars)", len(cleaned_text))
+        return cleaned_text
+
     def generate(self, request: GenerationRequest, context: str = "") -> TutorialPlan:
         cache_key = request.model_dump_json()
         cached = self.cache.get_json("tutorials", cache_key)
@@ -49,7 +80,8 @@ class OllamaTutorialGenerator:
                 chunk = json.loads(line)
                 text = chunk.get("response", "")
                 full_response += text
-                print(text, end="", flush=True)
+                sanitized = text.encode('utf-8', errors='ignore').decode('utf-8')
+                print(sanitized, end="", flush=True)
                 if chunk.get("done"):
                     break
         print("\n--- LLM GENERATION COMPLETE ---\n", flush=True)

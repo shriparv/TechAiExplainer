@@ -63,11 +63,17 @@ class TechExplainerPipeline:
         self.logger.info("Run directory created: %s", run_dir)
         
         self.logger.info("Generating tutorial plan via LLM...")
-        search_context = self.search_client.search_topic(request.topic)
-        self.logger.info("Web search context gathered (%d chars)", len(search_context))
-        print(f"\n--- WEB SEARCH RESULTS FOR: {request.topic} ---\n{search_context}\n-----------------------------------\n")
+        raw_search_context = self.search_client.search_topic(request.topic)
+        self.logger.info("Raw web search context gathered (%d chars)", len(raw_search_context))
+        sanitized_raw = raw_search_context.encode('utf-8', errors='ignore').decode('utf-8')
+        print(f"\n--- RAW WEB SEARCH RESULTS FOR: {request.topic} ---\n{sanitized_raw}\n-----------------------------------\n")
         
-        tutorial = self.scene_planner.normalize(request, self.ollama.generate(request, search_context))
+        # Clean the context using LLM
+        cleaned_context = self.ollama.clean_research_context(request.topic, raw_search_context)
+        sanitized_clean = cleaned_context.encode('utf-8', errors='ignore').decode('utf-8')
+        print(f"\n--- CLEANED FACTUAL SUMMARY ---\n{sanitized_clean}\n-----------------------------------\n")
+        
+        tutorial = self.scene_planner.normalize(request, self.ollama.generate(request, cleaned_context))
         tutorial_path = run_dir / "tutorial.json"
         tutorial_path.write_text(json.dumps(tutorial.model_dump(), indent=2), encoding="utf-8")
         self.logger.info("Tutorial plan saved to %s", tutorial_path)

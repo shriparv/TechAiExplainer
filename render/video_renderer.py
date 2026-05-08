@@ -5,8 +5,8 @@ import random
 from pathlib import Path
 
 from moviepy import AudioFileClip, CompositeVideoClip, ImageClip, concatenate_videoclips, CompositeAudioClip
-import moviepy.video.fx as vfx
-from moviepy.audio.fx import volumex
+from moviepy.video.fx.Loop import Loop as MPLoop
+from moviepy.audio.fx.MultiplyVolume import MultiplyVolume
 
 from config.settings import VideoSettings
 from core.models import TimelinePlan
@@ -39,7 +39,8 @@ class VideoRenderer:
             
             # --- ANIMATION: Subtle Zoom (Ken Burns Effect) ---
             # Increase scale from 1.0 to 1.1 over the duration
-            image_clip = image_clip.transform(lambda get_frame, t: vfx.resize(get_frame(t), 1.0 + 0.1 * (t / duration)))
+            image_clip = image_clip.resized(lambda t: 1.0 + 0.1 * (t / duration))
+
             
             audio_clip = AudioFileClip(scene.narration_path)
             image_clip = image_clip.with_audio(audio_clip)
@@ -60,8 +61,10 @@ class VideoRenderer:
                 bg_music = AudioFileClip(str(music_path))
                 
                 # Loop and trim to match video duration
-                bg_music = bg_music.fx(vfx.loop, duration=final_clip.duration)
-                bg_music = bg_music.fx(volumex, self.settings.bg_music_volume)
+                bg_music = bg_music.with_effects([
+                    MPLoop(duration=final_clip.duration),
+                    MultiplyVolume(self.settings.bg_music_volume),
+                ])
                 
                 # Mix with existing narration
                 new_audio = CompositeAudioClip([final_clip.audio, bg_music])
